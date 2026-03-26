@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Brand: Warm Coral ─────────────────────────── */
+    --primary: 14 100% 64%;          /* #FF6B4A */
+    --primary-foreground: 0 0% 100%;
+
+    /* ── Neutrals ──────────────────────────────────── */
+    --background: 0 0% 100%;
+    --foreground: 220 13% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 13%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 13% 13%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 14 100% 64%;
+
+    --radius: 0.5rem;
+
+    /* ── Sidebar (light — client layout) ──────────── */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 220 13% 13%;
+    --sidebar-primary: 14 100% 64%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 93%;
+    --sidebar-accent-foreground: 220 13% 13%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 14 100% 64%;
+  }
+
+  .dark {
+    /* ── Neutrals (dark — admin sidebar) ──────────── */
+    --background: 222 47% 11%;
+    --foreground: 213 31% 91%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 213 31% 91%;
+
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 213 31% 91%;
+
+    --muted: 222 47% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 222 47% 18%;
+    --accent-foreground: 213 31% 91%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 213 31% 91%;
+
+    --border: 222 47% 20%;
+    --input: 222 47% 20%;
+    --ring: 14 100% 64%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ── Utility: coral button override ─────────────────────────── */
+.btn-coral {
+  background-color: #FF6B4A;
+  color: white;
+}
+.btn-coral:hover {
+  background-color: #e85535;
+}
+
+/* ── Status badge colours ────────────────────────────────────── */
+.badge-pending    { @apply bg-amber-100 text-amber-800 border-amber-200; }
+.badge-approved   { @apply bg-green-100 text-green-800 border-green-200; }
+.badge-skipped    { @apply bg-zinc-100 text-zinc-500 border-zinc-200; }
+.badge-dispatched { @apply bg-blue-100 text-blue-800 border-blue-200; }
