@@ -35,6 +35,7 @@ export interface Database {
           created_at?: string
         }
         Update: Partial<Database["public"]["Tables"]["companies"]["Insert"]>
+        Relationships: []
       }
       users: {
         Row: {
@@ -47,6 +48,7 @@ export interface Database {
           created_at?: string
         }
         Update: Partial<Database["public"]["Tables"]["users"]["Insert"]>
+        Relationships: []
       }
       employees: {
         Row: {
@@ -63,6 +65,7 @@ export interface Database {
           created_at?: string
         }
         Update: Partial<Database["public"]["Tables"]["employees"]["Insert"]>
+        Relationships: []
       }
       orders: {
         Row: {
@@ -82,6 +85,7 @@ export interface Database {
           created_at?: string
         }
         Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>
+        Relationships: []
       }
       bakery_summary_emails: {
         Row: {
@@ -94,6 +98,7 @@ export interface Database {
           sent_at?: string
         }
         Update: Partial<Database["public"]["Tables"]["bakery_summary_emails"]["Insert"]>
+        Relationships: []
       }
     }
     Views: Record<string, never>
