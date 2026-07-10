@@ -1,11 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createMiddlewareClient } from "@/lib/supabase/middleware"
 
-const PUBLIC_PATHS = ["/login", "/api/auth/callback"]
+// `/jarvis` is the command center. It runs on seed data today, so it's
+// public for now — protect it once it's wired to your real accounts.
+const PUBLIC_PATHS = ["/login", "/api/auth/callback", "/jarvis"]
 const CRON_PATHS = ["/api/cron/", "/api/webhooks/"]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // The root now lands on the Jarvis command center.
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/jarvis", request.url))
+  }
 
   // Allow public paths through
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {

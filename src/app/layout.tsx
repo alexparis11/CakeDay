@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CakeDay — Birthday Cake Delivery, Automated",
-  description: "B2B SaaS platform that automates employee birthday cake deliveries.",
+  title: "Jarvis — Multi-Business Command Center",
+  description: "One dashboard for every business, run by a roster of specialized agents.",
 }
 
 export default function RootLayout({

@@ -1,230 +1,116 @@
-# CakeDay 🎂
+# Jarvis 🪄
 
-B2B SaaS platform that automates employee birthday cake deliveries.
+A **multi-business command center** — one dashboard for every business you run,
+staffed by a roster of specialized agents that each own a domain (revenue,
+inbox, content, social, ads, support, analytics, browser, ops) and work tasks
+across all of your ventures at once.
 
-Built with **Next.js 15** (App Router), **Supabase**, **Stripe**, and **Resend**.
+Built on **Next.js 16** (App Router) + **Tailwind** + **shadcn/ui**.
 
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15 App Router (TypeScript) |
-| Database + Auth | Supabase (Postgres + Auth + RLS) |
-| Payments | Stripe |
-| Email | Resend + React Email |
-| Styling | Tailwind CSS v3 + shadcn/ui |
-| Deploy | Vercel |
+> This repo began life as CakeDay and has been repurposed into Jarvis. The
+> command center lives at **`/jarvis`** (and is the site's home page). The
+> original CakeDay routes still exist in the tree but are no longer the front
+> door — they can be removed in a follow-up.
 
 ---
 
-## Local Setup
+## What it does
 
-### Prerequisites
+Open the app and you land on the Jarvis command center:
 
-- Node.js 18+
-- [Supabase CLI](https://supabase.com/docs/guides/cli)
-- A Supabase project
-- A Stripe account
-- A Resend account
+- **Morning briefing** — a one-line summary of what needs you across every business.
+- **Business switcher** — flip between *All businesses* and any single venture; every
+  panel below re-scopes instantly.
+- **Stat tiles** — portfolio revenue, agents working now, approvals waiting, tasks running.
+- **Work board** — a kanban of every agent's tasks (Needs approval → In progress →
+  Blocked → Queued → Done).
+- **Agent roster** — each specialist, its remit, which integration it uses, whether
+  that integration is connected yet, and what it's doing right now.
+- **Activity feed** — a live timeline of what the agents have done for you.
 
-### 1. Clone and install
+The seeded businesses are: **APulseconnect Ltd**, **Dojo**, **unicred**,
+**AUTIC**, and **Menzies Aviation OSL**.
+
+---
+
+## The agent roster
+
+Each agent maps to one of the capabilities from the Jarvis build plan. The
+dashboard shows which are wired up (`connected`) vs. still to be plugged in.
+
+| Agent | Domain | Does | Integration |
+|-------|--------|------|-------------|
+| **Jarvis** | Orchestrator | Delegates, escalates, briefs you each morning | Subagents + Routines |
+| **Ledger** | Revenue | Tracks retainers, commission, invoices | RevenueCat MCP + Stripe |
+| **Quill** | Content | Drafts posts, decks, outreach in your voice | Knowledge base (markdown) |
+| **Echo** | Social | Schedules & auto-posts approved content | Buffer MCP |
+| **Spark** | Ads | Reads ad performance, adjusts spend | Meta Ads connector |
+| **Sift** | Inbox | Triages email, drafts replies | Gmail MCP |
+| **Warden** | Support | Answers customers in your brand voice | Knowledge base (markdown) |
+| **Prism** | Analytics | Instagram / product analytics into plain English | Meta developer app + token |
+| **Scout** | Browser | Web chores no API exposes (lead research, portals) | Claude for Chrome |
+| **Atlas** | Ops | Schedules, deadlines, recurring routines | Routines via `/schedule` |
+
+---
+
+## Architecture
+
+Everything is intentionally **storage-agnostic** so the dashboard works with
+zero configuration today and grows into real integrations later.
+
+```
+src/
+├── app/jarvis/page.tsx            # the /jarvis route (also the home page)
+├── components/jarvis/
+│   ├── JarvisDashboard.tsx        # client shell: business switcher + layout
+│   ├── StatTiles.tsx              # top-line KPIs
+│   ├── BusinessSwitcher (inline)  # portfolio ⇄ single business
+│   ├── AgentRoster.tsx            # the specialist cards
+│   ├── TaskBoard.tsx              # unified kanban
+│   ├── ActivityFeed.tsx          # timeline
+│   └── Sparkline.tsx              # inline revenue trend
+└── lib/jarvis/
+    ├── types.ts                   # Business / Agent / AgentTask / ActivityEvent
+    ├── data.ts                    # seed data + selectors  ← edit me
+    └── ui.ts                      # status colors, icons, relative time
+```
+
+**The UI never touches raw data — it reads through the selectors in
+`lib/jarvis/data.ts`** (`getBusinesses`, `getAgentsForBusiness`, `getTasks`,
+`getActivity`, `getStats`). To go live, back those selectors with Supabase or
+the real APIs; the components don't change.
+
+### Editing your businesses
+
+Open `src/lib/jarvis/data.ts` and edit the `BUSINESSES` array — the switcher,
+stat tiles and task grouping all derive from it. Tasks and activity reference a
+business by `id`.
+
+---
+
+## Run it
 
 ```bash
-cd cakeday
 npm install
-```
-
-### 2. Environment variables
-
-Copy the example file and fill in your values:
-
-```bash
-cp .env.example .env.local
-```
-
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL (found in Project Settings → API) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (never expose client-side) |
-| `STRIPE_SECRET_KEY` | Stripe secret key (`sk_live_...` or `sk_test_...`) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
-| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret from Stripe Dashboard |
-| `STRIPE_STARTER_PRICE_ID` | Stripe Price ID for Starter plan (£49/mo) |
-| `STRIPE_GROWTH_PRICE_ID` | Stripe Price ID for Growth plan (£89/mo) |
-| `RESEND_API_KEY` | Resend API key (`re_...`) |
-| `RESEND_FROM_EMAIL` | From address (e.g. `CakeDay <noreply@yourdomain.com>`) |
-| `CRON_SECRET` | Random secret string to protect cron endpoints |
-| `NEXT_PUBLIC_APP_URL` | Full URL of the app (e.g. `https://app.yourcakeday.com`) |
-| `ADMIN_EMAIL` | Email address to receive bakery dispatch alerts |
-
-### 3. Run database migrations
-
-Make sure you have a Supabase project and the CLI configured:
-
-```bash
-supabase login
-supabase link --project-ref YOUR_PROJECT_REF
-
-# Apply migrations
-supabase db push
-```
-
-Or run the SQL manually in the Supabase Dashboard SQL editor, in order:
-1. `supabase/migrations/001_schema.sql`
-2. `supabase/migrations/002_rls.sql`
-
-### 4. Set up Stripe products
-
-In your [Stripe Dashboard](https://dashboard.stripe.com/products), create two products:
-
-- **Starter** — £49/month (up to 20 employees)
-  - Copy the Price ID → set as `STRIPE_STARTER_PRICE_ID`
-- **Growth** — £89/month (up to 50 employees)
-  - Copy the Price ID → set as `STRIPE_GROWTH_PRICE_ID`
-
-### 5. Set up Stripe webhook (local)
-
-```bash
-stripe listen --forward-to localhost:3000/api/webhooks/stripe
-```
-
-Copy the webhook signing secret and set it as `STRIPE_WEBHOOK_SECRET`.
-
-**Events to subscribe to in production:**
-- `customer.subscription.created`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
-- `invoice.payment_failed`
-- `invoice.payment_succeeded`
-
-### 6. Create the admin user
-
-The admin account must be created directly in Supabase:
-
-1. Go to Supabase Dashboard → Authentication → Users → Invite user
-2. After creation, run this SQL to set the admin role:
-
-```sql
--- Replace with the actual user ID
-UPDATE auth.users
-SET raw_app_meta_data = raw_app_meta_data || '{"role": "admin"}'::jsonb
-WHERE email = 'admin@yourdomain.com';
-
-INSERT INTO public.users (id, role)
-VALUES ('USER_ID_HERE', 'admin')
-ON CONFLICT (id) DO UPDATE SET role = 'admin';
-```
-
-### 7. Run the dev server
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Sign in as admin and navigate to `/admin/dashboard`.
+Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to
+`/jarvis`. No env vars or database needed to view the command center; it runs
+entirely on the seed data.
 
 ---
 
-## Vercel Deployment
+## Wiring in real integrations (roadmap)
 
-### Deploy
+The agent roster doubles as a checklist. In rough priority order:
 
-```bash
-vercel --prod
-```
+1. **Sift (Inbox)** — Gmail MCP is already available in this workspace.
+2. **Atlas (Ops)** — schedule the morning briefing as a Routine via `/schedule`.
+3. **Ledger (Revenue)** — Stripe / RevenueCat for APulseconnect + Dojo.
+4. **Quill / Warden (Content & Support)** — point at a markdown knowledge base per business.
+5. **Echo / Spark / Prism (Social, Ads, Analytics)** — Buffer MCP + Meta app + Meta Ads.
+6. **Scout (Browser)** — Claude for Chrome for Dojo lead research.
+7. **Jarvis (Orchestrator)** — real subagents (`.claude/agents/*.md`) per domain.
 
-Or connect your GitHub repo to Vercel for automatic deployments.
-
-Add all environment variables in the Vercel Dashboard → Project → Settings → Environment Variables.
-
-### Vercel Cron Jobs
-
-The `vercel.json` already configures two cron jobs:
-
-```json
-{
-  "crons": [
-    { "path": "/api/cron/birthday-reminders", "schedule": "0 8 * * *" },
-    { "path": "/api/cron/birthday-nudges", "schedule": "0 8 * * *" }
-  ]
-}
-```
-
-Both run at **8:00 AM UTC** every day.
-
-Vercel automatically passes an `Authorization: Bearer <CRON_SECRET>` header when invoking cron routes, using the `CRON_SECRET` environment variable you set.
-
-**To test cron routes manually:**
-
-```bash
-curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  https://your-app.vercel.app/api/cron/birthday-reminders
-```
-
-### Stripe webhook in production
-
-1. Go to Stripe Dashboard → Developers → Webhooks
-2. Add endpoint: `https://your-app.vercel.app/api/webhooks/stripe`
-3. Subscribe to the events listed above
-4. Copy the signing secret → set as `STRIPE_WEBHOOK_SECRET` in Vercel
-
----
-
-## Project Structure
-
-```
-cakeday/
-├── emails/                    # React Email templates
-│   ├── BirthdayReminder.tsx
-│   ├── BirthdayNudge.tsx
-│   ├── AdminOrderAlert.tsx
-│   └── WelcomeEmail.tsx
-├── supabase/migrations/       # SQL schema + RLS policies
-│   ├── 001_schema.sql
-│   └── 002_rls.sql
-├── src/
-│   ├── middleware.ts           # Auth guard + role-based routing
-│   ├── app/
-│   │   ├── (admin)/           # Admin route group (dark sidebar)
-│   │   ├── (client)/          # Client route group (light sidebar)
-│   │   ├── login/             # Login page
-│   │   └── api/               # API routes
-│   ├── components/
-│   │   ├── ui/                # shadcn/ui primitives
-│   │   ├── layouts/           # AdminShell, ClientShell
-│   │   ├── admin/             # Admin-specific components
-│   │   └── client/            # Client-specific components
-│   ├── lib/
-│   │   ├── supabase/          # Client, server, middleware factories
-│   │   ├── services/          # Service layer (companies, employees, orders, billing)
-│   │   ├── stripe.ts
-│   │   └── resend.ts
-│   └── types/                 # TypeScript types
-└── vercel.json                # Cron schedule config
-```
-
----
-
-## How it works
-
-1. **Admin creates a client** → Company row + Supabase auth user + Stripe customer/subscription + welcome email via Resend
-2. **Client uploads employees** → CSV upload with preview and validation
-3. **Daily at 8am** → Cron checks for employees with birthdays in 7 days → creates `pending_approval` orders → sends reminder emails
-4. **Client approves an order** → Status updated + admin receives dispatch email
-5. **If no action for 5+ days** → Nudge email sent to client
-6. **Admin marks as dispatched** → Status updated to `dispatched`
-
----
-
-## Row Level Security
-
-All tables have RLS enabled:
-
-- **Clients** can only read/write data belonging to their own `company_id`
-- **Admins** have full read/write access to all tables
-- Cron routes and admin server actions use the `SUPABASE_SERVICE_ROLE_KEY` to bypass RLS
-
-The `role` is stored in Supabase Auth `app_metadata` (JWT), so role checks in middleware and RLS helpers cost zero extra database queries.
+Each becomes a small change behind one selector — no UI rewrites.
